@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiestas Antonio</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            text-align: center;
+        }
+        table {
+            width: 80%;
+            margin: auto;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        .festivo {
+            color: red;
+        }
+        .hoy {
+            background-color: #8FC8F3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Días de fiesta</h1>
+    <div id="calendarios"></div>
+
+    <script>
+        // Definir los nombres de los meses en español
+        const mesesEspanol = [
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        ];
+
+        // Función para obtener los días de trabajo según el mes
+        function obtenerDiasTrabajo(mes) {
+            switch (mes) {
+                case 1: // Enero
+                    return [...range(13, 19), ...range(23, 28), 1, 2, 31];
+                case 2: // Febrero
+                    return [...range(10, 14), ...range(17, 23), ...range(26, 28), ...range(1, 6)];
+                case 3: // Marzo
+                    return [...range(24, 30), ...range(1, 4), ...range(7, 13)];
+                case 4: // Abril
+                    return [...range(22, 25), ...range(28, 30), ...range(2, 8), ...range(11, 17)];
+                case 5: // Mayo
+                    return [...range(1, 4), ...range(26, 29), ...range(7, 13), ...range(16, 22)];
+                case 6: // Junio
+                    return [...range(2, 8), ...range(11, 17), ...range(20, 26)];
+                case 7: // Julio
+                    return range(9, 11);
+                case 8: // Agosto
+                    return [...range(4, 8), ...range(11, 17), ...range(20, 26), ...range(29, 31)];
+                case 9: // Septiembre
+                    return [...range(15, 21), ...range(24, 30), ...range(1, 4)];
+                case 10: // Octubre
+                    return [...range(13, 17), ...range(20, 26), ...range(29, 30), ...range(3, 9)];
+                case 11: // Noviembre
+                    return [...range(24, 30), ...range(1, 4), ...range(7, 13)];
+                case 12: // Diciembre
+                    return [...range(22, 24), ...range(3, 9), ...range(12, 18)];
+                default:
+                    return [];
+            }
+        }
+
+        // Función para generar un rango de números
+        function range(start, end) {
+            return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+        }
+
+        // Función para generar un calendario
+        function generarCalendario(mes, año, diasTrabajo) {
+            const primerDia = new Date(año, mes - 1, 1).getDay() || 7; // 1 (Lunes) a 7 (Domingo)
+            const numDias = new Date(año, mes, 0).getDate();
+            const hoy = new Date().getDate();
+            const esMesActual = new Date().getMonth() + 1 === mes;
+
+            let calendario = `<h2>${mesesEspanol[mes - 1]}</h2>
+                            <table>
+                                <tr>
+                                    <th>Lun</th>
+                                    <th>Mar</th>
+                                    <th>Mié</th>
+                                    <th>Jue</th>
+                                    <th>Vie</th>
+                                    <th>Sáb</th>
+                                    <th>Dom</th>
+                                </tr>
+                                <tr>`;
+
+            // Rellenar celdas vacías antes del primer día del mes
+            for (let i = 1; i < primerDia; i++) {
+                calendario += "<td></td>";
+            }
+
+            // Mostrar los días del mes
+            for (let dia = 1; dia <= numDias; dia++) {
+                const esFestivo = !diasTrabajo.includes(dia);
+                const esHoy = esMesActual && dia === hoy;
+
+                calendario += `<td class="${esFestivo ? 'festivo' : ''} ${esHoy ? 'hoy' : ''}">${dia}</td>`;
+
+                // Si es domingo, pasar a la siguiente fila
+                if ((primerDia + dia - 1) % 7 === 0 && dia !== numDias) {
+                    calendario += "</tr><tr>";
+                }
+            }
+
+            // Rellenar celdas vacías después del último día del mes
+            const celdasVacias = (7 - ((primerDia + numDias - 1) % 7)) % 7;
+            for (let i = 0; i < celdasVacias; i++) {
+                calendario += "<td></td>";
+            }
+
+            calendario += "</tr></table>";
+            return calendario;
+        }
+
+        // Función principal
+        function mostrarCalendarios() {
+            const hoy = new Date();
+            const mesActual = hoy.getMonth() + 1;
+            const año = hoy.getFullYear();
+
+            const calendariosDiv = document.getElementById("calendarios");
+
+            // Calendario del mes actual
+            const diasTrabajoActual = obtenerDiasTrabajo(mesActual);
+            calendariosDiv.innerHTML += generarCalendario(mesActual, año, diasTrabajoActual);
+
+            // Calendario del mes siguiente (si no es diciembre)
+            if (mesActual < 12) {
+                const diasTrabajoSiguiente = obtenerDiasTrabajo(mesActual + 1);
+                calendariosDiv.innerHTML += generarCalendario(mesActual + 1, año, diasTrabajoSiguiente);
+            }
+
+            // Calendario del tercer mes (si no es noviembre o diciembre)
+            if (mesActual < 11) {
+                const diasTrabajoTercerMes = obtenerDiasTrabajo(mesActual + 2);
+                calendariosDiv.innerHTML += generarCalendario(mesActual + 2, año, diasTrabajoTercerMes);
+            }
+        }
+
+        // Mostrar los calendarios al cargar la página
+        mostrarCalendarios();
+    </script>
+</body>
+</html>
